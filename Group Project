@@ -1,0 +1,77 @@
+/**
+ * InsertProjectNameHere.cpp
+ * @authors: Alex Lee, Ed Skewis, Zi, Alyssa Leano
+ * @date: 06.23.2016
+ * CS131 (Summer 2016) - Group Project (HW_#2)
+ * This program will simulate the career profile
+ * of a MOBA video game player
+ **/
+
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
+
+int main() {
+
+	//TODO:
+	//completed-win-loss ratio
+	//completed-Kill & Death ratio
+	//completed-each ratio could assign a user into each rank
+
+	/* For future references
+	int rank_bronze = 1;
+	int rank_silver = 2;
+	int rank_gold = 3;
+	int rank_platinum = 4;
+	int rank_diamond = 5;
+	*/
+   
+    // declaring necessary variables
+	char user_name[11]; //c-string user name data, limits to 10 characters
+	int kill_num;
+	int death_num;
+	int win_num;
+	int loss_num;
+	double winloss_ratio;
+	int game_count;
+	double kd_ratio;
+	const int MATCH_TIME = 30;
+	int play_time;
+
+	// prompt user for username
+	cout << "Choose a username (10 character limit): ";
+	cin.getline(user_name, 11);
+
+	// prompt user for kills and deaths quantity
+	// calculate K/D ratio 
+	cout << "Please enter the number of kills: ";
+	cin >> kill_num;
+	cout << "Please enter the number of deaths: ";
+	cin >> death_num;
+	kd_ratio = static_cast<double>(kill_num) / death_num;
+
+	// prompt user for wins and losses quantity
+	// calculate W/L ratio
+	cout << "Please enter the number of wins: ";
+	cin >> win_num;
+	cout << "Please enter the number of losses: ";
+	cin >> loss_num;
+	game_count = win_num + loss_num; //game count
+	winloss_ratio = (static_cast<double>(win_num) / game_count) * 100;
+	
+	// calculate time spent playing
+	play_time = game_count * MATCH_TIME / 60;
+
+	//profile display on console
+	cout << "\n";
+	cout << "Career Profile\n";
+	cout << setw(19) << left << "User Name" << ": " << setw(10) << user_name << endl;
+	cout << setw(19) << "Time Spent Playing" << ": " << play_time << " hours" << endl;
+	cout << setw(19) << setprecision(2) << fixed << "K & D Ratio" << ": " << setw(5) << kd_ratio*100 << "%" << endl;
+	cout << setw(19) << "W & L Ratio" << ": " << setw(5) << winloss_ratio << "%" << endl;
+	cout << setw(19) << "Avg kills/game" << ": " << setw(5) << static_cast<double>(kill_num)/game_count << "kills" << endl;
+	cout << setw(19) << "Avg deaths/game" << ": " << setw(5) << static_cast<double>(death_num)/game_count << "deaths" <<  endl;
+
+	
+}
