@@ -1,10 +1,11 @@
-/* GroupProject5Prototype.cpp 
-   This is a mock-up build 
-   of the game match making mechanics 
-   See: README.txt*/
-   
-   // overloading function: lines 31-32
-   // default parameter
+/**
+ * hw_7.cpp
+ * @authors: Alex Lee, Ed Skewis, Zi, Alyssa Leano
+ * @date: 08.02.2016
+ * CS131 (Summer 2016) - Group Project (HW_#7)
+ * This program will simulate the career profile
+ * of a MOBA video game player
+ **/
 
 #include <iostream> //input & output stream
 #include <iomanip> //input & output manipulator
@@ -18,52 +19,57 @@ using namespace std;
 // prototype
 void printIntro();
 int getChoice();
-void execute(int, int &);
-void getModeChoice(int &);
-void redirectMode(int, int &);
-void buildBattleRoyale(int &);
-void buildSkirmish(int &);
-void buildTagTeam(int &);
-void buildAllyTeam(int, int &);
-void buildEnemyTeam(int, int &);
-void printPlayer(int, int, int, int, int);
-void printPlayer(int, int, string, string, string, string);
-int generateNum();
-int getUserFighter();
-int getUserRole();
-int getUserElement();
-int getUserWeapon();
-int getUserLevel();
-void buildPlayer(int &);
-void buildPlayer(int, int &);
-string getName();
-string getRole();
-string getElement();
-string getWeapon();
+void execute(int);
+void game_init();
+void redirectMode(int);
 
-void K_D_count(int &, int &, double &, int &);
+void game_init(string[5][2], string[5][2], string[5][2], string[5][2], string[5][2], int[5][2]);
+void build_game(int, string[5][2], string[5][2], string[5][2], string[5][2], string[5][2], int[5][2]);
+void user_character(string[5][2], string[5][2], string[5][2], string[5][2], string[5][2], int[5][2]);
+
+void getUserName(string [5][2]);
+void getUserLevel(int [5][2]);
+void getUserFighter(int, string[5][2]);
+void getUserRole(int, string[5][2]);
+void getUserAffinity(int, string[5][2]);
+void getUserWeapon(int, string[5][2]);
+
+int buildBattleRoyale(string [5], string [5], string[5], string [5], string [5], string[5][2], string[5][2], string[5][2], string[5][2], string[5][2], int[5][2]);
+int buildSkirmish(string [5], string [5], string[5], string [5], string [5], string[5][2], string[5][2], string[5][2], string[5][2], string[5][2], int[5][2]);
+int buildTagTeam(string [5], string [5], string[5], string [5], string [5], string[5][2], string[5][2], string[5][2], string[5][2], string[5][2], int[5][2]);
+
+void print_dashboard(int, string[5][2], string[5][2], string[5][2], string[5][2], string[5][2], int[5][2]);
+
+
+void K_D_count(int &, int &, int&, int&, double &, int &);
 void W_L_count(int &, int &, int &, double &);
 void kd_avg_calc(double &, double &, int &, int &, int &, double &);
 void season_perf_sign(double &, char &);
 void user_rank_set(double &, string &, double &, const int &, double &, const int &, double &, const int &);
 void getCareerProfile();
+int getArrSum(int[]);
+int getArrHigh(int[]);
+int getArrLow(int[]);
+
+const int SIZE = 10;
 
 // executable main method
 int main() {
 	
-	int choice, user_level;
+	int choice;
 	
     printIntro();
     choice = getChoice();
-    execute(choice, user_level);
+    execute(choice);
 }
 
 // prints introduction of the game
 void printIntro() {
     
-    cout << "========[Galactic War]========" << endl
-         << "The game that has space wizards that fight each other" << endl
-         << "and have cosmic battles in space!\n" << endl;
+    cout << "========[Heroes of Centaurus]========" << endl
+         << "For the last 100 years, a war has raged in the Centaurus Galaxy" << endl
+         << "between the Cosmic Federation and the Galactic Republic." << endl
+         << "Choose a hero and battle to reclaim your glory." << endl;
 }
 
 // displays menu and prompts for user choice
@@ -71,7 +77,7 @@ int getChoice() {
     
     int choice;
     cout << "1) Start a Match" << endl
-         << "2) View Career Profile" << endl 
+         << "2) Generate Career Profile" << endl 
          << "Enter choice: ";
          
     cin >> choice;
@@ -86,30 +92,547 @@ int getChoice() {
          
 }
 
-void K_D_count(int &kill_num, int &death_num, double &kd_ratio, int &predictive_killstreak){
+// method that executes start match or career profile
+void execute (int a) {
+    
+    //empty 2D arrays
+	string game_users[5][2], game_fighters[5][2], game_roles[5][2], game_affinity[5][2], game_weapons[5][2];
+	int user_levels[5][2];
+	
+    if (a == 1) {
+        game_init(game_users, game_fighters, game_roles, game_affinity, game_weapons, user_levels);
+    } else if (a == 2) {
+        getCareerProfile();
+    }
+}
+
+void game_init(string game_users[5][2], string game_fighters[5][2], string game_roles[5][2], string game_affinity[5][2], string game_weapons[5][2], int user_levels[5][2]){
+	int user_input;
+	do{
+		cout << "Select Game Mode\n"
+		 << "1) Battle Royale (5 vs 5)\n"
+		 << "2) Skirmish (3 vs 3)\n"
+		 << "3) Tag Team (2 vs 2)\n"
+		 << "Enter your choice: " << endl;
+		cin >> user_input;
+	} while (!(user_input == 1 || user_input == 2 || user_input == 3));
+	
+	build_game(user_input, game_users, game_fighters, game_roles, game_affinity, game_weapons, user_levels);
+	
+}
+
+void build_game(int user_input, string game_users[5][2], string game_fighters[5][2], string game_roles[5][2], string game_affinity[5][2], string game_weapons[5][2], int user_levels[5][2]){
+	//setting up user
+	user_character(game_users, game_fighters, game_roles, game_affinity, game_weapons, user_levels);
+	
+	//setting up bots
+	ifstream fileIn;
+	string username[5], fighter[5], role[5], affinity[5], weapons[5], temp_string;
+	int counter = 0, user_count;
+	//setting up fighters array
+	fileIn.open("fighters.txt");
+	while (fileIn && counter < 5){
+		getline(fileIn, temp_string);
+		fighter[counter] = temp_string;
+		counter++;
+	}
+	fileIn.close();
+	//setting up role array
+	counter = 0;
+	fileIn.open("roles.txt");
+	while (fileIn && counter < 5){
+		getline(fileIn, temp_string);
+		role[counter] = temp_string;
+		counter++;
+	}
+	fileIn.close();
+	//setting up affinity array
+	counter = 0;
+	fileIn.open("affinity.txt");
+	while (fileIn && counter < 5){
+		getline(fileIn, temp_string);
+		affinity[counter] = temp_string;
+		counter++;
+	}
+	fileIn.close();
+	//setting up weapons array
+	counter = 0;
+	fileIn.open("weapons.txt");
+	while (fileIn && counter < 5){
+		getline(fileIn, temp_string);
+		weapons[counter] = temp_string;
+		counter++;
+	}
+	fileIn.close();
+	
+	switch (user_input){
+		case 1:
+			user_count = buildBattleRoyale(username, fighter, role, affinity, weapons, game_users, game_fighters, game_roles, game_affinity, game_weapons, user_levels);
+			print_dashboard(user_count, game_users, game_fighters, game_roles, game_affinity, game_weapons, user_levels);
+			break;
+		case 2:
+			user_count = buildSkirmish(username, fighter, role, affinity, weapons, game_users, game_fighters, game_roles, game_affinity, game_weapons, user_levels);
+			print_dashboard(user_count, game_users, game_fighters, game_roles, game_affinity, game_weapons, user_levels);
+			break;
+		case 3:
+			user_count = buildTagTeam(username, fighter, role, affinity, weapons, game_users, game_fighters, game_roles, game_affinity, game_weapons, user_levels);
+			print_dashboard(user_count, game_users, game_fighters, game_roles, game_affinity, game_weapons, user_levels);
+			break;
+	}
+}
+
+void user_character(string game_users[5][2], string game_fighters[5][2], string game_roles[5][2], string game_affinity[5][2], string game_weapons[5][2], int user_levels[5][2]){
+	int user_pick;
+	getUserName(game_users);
+	getUserLevel(user_levels);
+	getUserFighter(user_pick, game_fighters);
+	getUserRole(user_pick, game_roles);
+	getUserAffinity(user_pick, game_affinity);
+	getUserWeapon(user_pick, game_weapons);
+	
+}
+
+void getUserName(string game_users[5][2]){
+	string user_name;
+	cout << "Choose a username (10 character limit): ";
+	cin >> user_name;
+	game_users[0][0] = user_name;
+}
+
+void getUserLevel(int user_levels[5][2]){
+	int temp_level;
+	cout << "Please enter your current level: ";
+	cin >> temp_level;
+	user_levels[0][0] = temp_level;
+}
+
+void getUserFighter(int user_pick, string game_fighters[5][2]){
+	do {
+		cout << "\n========CHOOSE YOUR FIGHTER========\n"
+			 << "1) Orion, the King\n"
+			 << "2) Cassiopeia, the Queen\n"
+			 << "3) Arcturus, the Scholar\n"
+			 << "4) Hyperion, the Hero\n"
+		  	 << "5) Andromeda, the Assassin\n"
+		  	 << "Enter your choice: " << endl;
+		cin >> user_pick;
+	} while (!(user_pick == 1 || user_pick == 2 || user_pick == 3 || user_pick == 4 || user_pick == 5));
+	
+	switch (user_pick) {
+		case 1:
+			game_fighters[0][0] = "Orion, the King";
+			break;
+		case 2:
+			game_fighters[0][0] = "Cassiopeia, the Queen";
+			break;
+		case 3:
+			game_fighters[0][0] = "Arcturus, the Scholar";
+			break;
+		case 4:
+			game_fighters[0][0] = "Hyperion, the Hero";
+			break;
+		case 5:
+			game_fighters[0][0] = "Andromeda, the Assassin";
+			break;
+	}
+}
+
+void getUserRole(int user_pick, string game_roles[5][2]){
+	do {
+		cout << "\n========CHOOSE YOUR ROLE========\n"
+			 << "1) Paladin, the frontline\n"
+			 << "2) Sentinel, the defender\n"
+			 << "3) Scout, the reconnaisance\n"
+			 << "4) Sorceror, the thaumaturge\n"
+		  	 << "5) Andromeda, the Assassin\n"
+		  	 << "Enter your choice: " << endl;
+		cin >> user_pick;
+	} while (!(user_pick == 1 || user_pick == 2 || user_pick == 3 || user_pick == 4 || user_pick == 5));
+	
+	switch (user_pick) {
+		case 1:
+			game_roles[0][0] = "Paladin, the frontline";
+			break;
+		case 2:
+			game_roles[0][0] = "Sentinel, the defender";
+			break;
+		case 3:
+			game_roles[0][0] = "Scout, the reconnaisance";
+			break;
+		case 4:
+			game_roles[0][0] = "Sorceror, the thaumaturge";
+			break;
+		case 5:
+			game_roles[0][0] = "Medic, the Healer";
+			break;
+	}
+}
+
+void getUserAffinity(int user_pick, string game_affinity[5][2]){
+	do {
+		cout << "\n========CHOOSE YOUR AFFINITY========\n"
+			 << "1) Solar\n"
+			 << "2) Electric\n"
+			 << "3) Plasma\n"
+			 << "4) Fractal\n"
+		  	 << "5) Dark Energy\n"
+		  	 << "Enter your choice: " << endl;
+		cin >> user_pick;
+	} while (!(user_pick == 1 || user_pick == 2 || user_pick == 3 || user_pick == 4 || user_pick == 5));
+	
+	switch (user_pick) {
+		case 1:
+			game_affinity[0][0] = "Solar";
+			break;
+		case 2:
+			game_affinity[0][0] = "Electric";
+			break;
+		case 3:
+			game_affinity[0][0] = "Plasma";
+			break;
+		case 4:
+			game_affinity[0][0] = "Fractal";
+			break;
+		case 5:
+			game_affinity[0][0] = "Dark Energy";
+			break;
+	}
+}
+
+void getUserWeapon(int user_pick, string game_weapons[5][2]){
+	do {
+		cout << "\n========CHOOSE YOUR WEAPON========\n"
+			 << "1) Long Sword and Shield\n"
+			 << "2) Lance\n"
+			 << "3) Crossbow\n"
+			 << "4) Battle Axe\n"
+		  	 << "5) Dual Blade\n"
+		  	 << "Enter your choice: " << endl;
+		cin >> user_pick;
+	} while (!(user_pick == 1 || user_pick == 2 || user_pick == 3 || user_pick == 4 || user_pick == 5));
+	
+	switch (user_pick) {
+		case 1:
+			game_weapons[0][0] = "Long Sword and Shield";
+			break;
+		case 2:
+			game_weapons[0][0] = "Lance";
+			break;
+		case 3:
+			game_weapons[0][0] = "Crossbow";
+			break;
+		case 4:
+			game_weapons[0][0] = "Battle Axe";
+			break;
+		case 5:
+			game_weapons[0][0] = "Dual Blade";
+			break;
+	}
+}
+
+int buildBattleRoyale(string username[5], string fighter[5], string role[5], string affinity[5], string weapons[5], string game_users[5][2], string game_fighters[5][2], string game_roles[5][2], string game_affinity[5][2], string game_weapons[5][2], int user_levels[5][2]){
+	int num_of_players = 5, rand_fighter, rand_role, rand_affinity, rand_weapons, rand_level;
+	//building allies
+	unsigned seed = time(0);
+	srand(seed);
+	for (int i = 1; i < num_of_players; i++){
+		//assigning random variables
+		rand_fighter = (rand()%(5));
+		rand_role = (rand()%(5));
+		rand_affinity = (rand()%(5));
+		rand_weapons = (rand()%(5));
+		if (user_levels[0][0]<20){
+			rand_level = (rand()%(user_levels[0][0]))+1;
+		} else {
+			rand_level = (rand()% ( (user_levels[0][0]+5) - (user_levels[0][0]-5) + 1 ) )+(user_levels[0][0]-5);
+		}
+		rand_level = (rand()%(user_levels[0][0]))+1;
+		//assigning player info in 2D array
+		game_users[i][0] = "Player "+to_string(i);
+		game_fighters[i][0] = fighter[rand_fighter];
+		game_roles[i][0] = role[rand_role];
+		game_affinity[i][0] = affinity[rand_affinity];
+		game_weapons[i][0] = weapons[rand_weapons];
+		user_levels[i][0] = rand_level;
+	}
+	
+	//building enemies
+	for (int i = 0; i < num_of_players; i++){
+		//assigning random variables
+		rand_fighter = (rand()%(5));
+		rand_role = (rand()%(5));
+		rand_affinity = (rand()%(5));
+		rand_weapons = (rand()%(5));
+		if (user_levels[0][0]<20){
+			rand_level = (rand()%(user_levels[0][0]))+1;
+		} else {
+			rand_level = (rand()% ( (user_levels[0][0]+5) - (user_levels[0][0]-5) + 1 ) )+(user_levels[0][0]-5);
+		}
+		rand_level = (rand()%(user_levels[0][0]))+1;
+		//assigning player info in 2D array
+		game_users[i][1] = "Player "+to_string(i+1);
+		game_fighters[i][1] = fighter[rand_fighter];
+		game_roles[i][1] = role[rand_role];
+		game_affinity[i][1] = affinity[rand_affinity];
+		game_weapons[i][1] = weapons[rand_weapons];
+		user_levels[i][1] = rand_level;
+	}
+	
+	return num_of_players;
+}
+int buildSkirmish(string username[5], string fighter[5], string role[5], string affinity[5], string weapons[5], string game_users[5][2], string game_fighters[5][2], string game_roles[5][2], string game_affinity[5][2], string game_weapons[5][2], int user_levels[5][2]){
+	int num_of_players = 3, rand_fighter, rand_role, rand_affinity, rand_weapons, rand_level;
+	//building allies
+	unsigned seed = time(0);
+	srand(seed);
+	for (int i = 1; i < num_of_players; i++){
+		//assigning random variables
+		rand_fighter = (rand()%(5));
+		rand_role = (rand()%(5));
+		rand_affinity = (rand()%(5));
+		rand_weapons = (rand()%(5));
+		if (user_levels[0][0]<20){
+			rand_level = (rand()%(user_levels[0][0]))+1;
+		} else {
+			rand_level = (rand()% ( (user_levels[0][0]+5) - (user_levels[0][0]-5) + 1 ) )+(user_levels[0][0]-5);
+		}
+		rand_level = (rand()%(user_levels[0][0]))+1;
+		//assigning player info in 2D array
+		game_users[i][0] = "Player "+to_string(i);
+		game_fighters[i][0] = fighter[rand_fighter];
+		game_roles[i][0] = role[rand_role];
+		game_affinity[i][0] = affinity[rand_affinity];
+		game_weapons[i][0] = weapons[rand_weapons];
+		user_levels[i][0] = rand_level;
+	}
+	
+	//building enemies
+	for (int i = 0; i < num_of_players; i++){
+		//assigning random variables
+		rand_fighter = (rand()%(5));
+		rand_role = (rand()%(5));
+		rand_affinity = (rand()%(5));
+		rand_weapons = (rand()%(5));
+		if (user_levels[0][0]<20){
+			rand_level = (rand()%(user_levels[0][0]))+1;
+		} else {
+			rand_level = (rand()% ( (user_levels[0][0]+5) - (user_levels[0][0]-5) + 1 ) )+(user_levels[0][0]-5);
+		}
+		rand_level = (rand()%(user_levels[0][0]))+1;
+		//assigning player info in 2D array
+		game_users[i][1] = "Player "+to_string(i+1);
+		game_fighters[i][1] = fighter[rand_fighter];
+		game_roles[i][1] = role[rand_role];
+		game_affinity[i][1] = affinity[rand_affinity];
+		game_weapons[i][1] = weapons[rand_weapons];
+		user_levels[i][1] = rand_level;
+	}
+	
+	return num_of_players;
+}
+int buildTagTeam(string username[5], string fighter[5], string role[5], string affinity[5], string weapons[5], string game_users[5][2], string game_fighters[5][2], string game_roles[5][2], string game_affinity[5][2], string game_weapons[5][2], int user_levels[5][2]){
+	int num_of_players = 2, rand_fighter, rand_role, rand_affinity, rand_weapons, rand_level;
+	//building allies
+	unsigned seed = time(0);
+	srand(seed);
+	for (int i = 1; i < num_of_players; i++){
+		//assigning random variables
+		rand_fighter = (rand()%(5));
+		rand_role = (rand()%(5));
+		rand_affinity = (rand()%(5));
+		rand_weapons = (rand()%(5));
+		if (user_levels[0][0]<20){
+			rand_level = (rand()%(user_levels[0][0]))+1;
+		} else {
+			rand_level = (rand()% ( (user_levels[0][0]+5) - (user_levels[0][0]-5) + 1 ) )+(user_levels[0][0]-5);
+		}
+		rand_level = (rand()%(user_levels[0][0]))+1;
+		//assigning player info in 2D array
+		game_users[i][0] = "Player "+to_string(i);
+		game_fighters[i][0] = fighter[rand_fighter];
+		game_roles[i][0] = role[rand_role];
+		game_affinity[i][0] = affinity[rand_affinity];
+		game_weapons[i][0] = weapons[rand_weapons];
+		user_levels[i][0] = rand_level;
+	}
+	
+	//building enemies
+	for (int i = 0; i < num_of_players; i++){
+		//assigning random variables
+		rand_fighter = (rand()%(5));
+		rand_role = (rand()%(5));
+		rand_affinity = (rand()%(5));
+		rand_weapons = (rand()%(5));
+		if (user_levels[0][0]<20){
+			rand_level = (rand()%(user_levels[0][0]))+1;
+		} else {
+			rand_level = (rand()% ( (user_levels[0][0]+5) - (user_levels[0][0]-5) + 1 ) )+(user_levels[0][0]-5);
+		}
+		rand_level = (rand()%(user_levels[0][0]))+1;
+		//assigning player info in 2D array
+		game_users[i][1] = "Player "+to_string(i+1);
+		game_fighters[i][1] = fighter[rand_fighter];
+		game_roles[i][1] = role[rand_role];
+		game_affinity[i][1] = affinity[rand_affinity];
+		game_weapons[i][1] = weapons[rand_weapons];
+		user_levels[i][1] = rand_level;
+	}
+	
+	return num_of_players;
+}
+
+void print_dashboard(int user_count, string game_users[5][2], string game_fighters[5][2], string game_roles[5][2], string game_affinity[5][2], string game_weapons[5][2], int user_levels[5][2]){
+	cout << "\n=======YOUR TEAM=======\n";
+	for (int i = 0; i < user_count; i++){
+		cout << "User:     " << game_users[i][0] << '\n'
+			 << "Fighter:  " << game_fighters[i][0] << '\n'
+			 << "Level:    " << user_levels[i][0] << '\n'
+			 << "Position: " << game_roles[i][0] << '\n'
+			 << "Affinity: " << game_affinity[i][0] << '\n'
+			 << "Weapon:   " << game_weapons[i][0] << '\n' << '\n';
+	}
+	
+	cout << "=======ENEMY TEAM=======\n";
+	for (int i = 0; i < user_count; i++){
+		cout << "User:     " << game_users[i][1] << '\n'
+			 << "Fighter:  " << game_fighters[i][1] << '\n'
+			 << "Level:    " << user_levels[i][1] << '\n'
+			 << "Position: " << game_roles[i][1] << '\n'
+			 << "Affinity: " << game_affinity[i][1] << '\n'
+			 << "Weapon:   " << game_weapons[i][1] << '\n' << '\n';
+	}
+}
+
+void getCareerProfile(){
+    // declaring necessary variables
+	char user_name[11], //c-string user name data, limits to 10 characters
+		 performance_sign, // indicates positive ('+') or negative ('-') season performance
+		 init_char; //program initialization character
+		 
+	string user_rank_string; //user rank in string
+	
+	int kill_sum, //kill count in-game
+	    kill_high,
+		death_sum, //death count in-game
+		death_low,
+		win_num, //win count in-game
+		loss_num, //loss count in-game
+		game_count, //number of games played
+		play_time, //total time played
+		predictive_killstreak, //predicting the continuous kill streak with random number
+		user_rank; // numerical value for rank
+		
+	const int MATCH_TIME = 30, // average time per match
+			  KD_WEIGHT = 200, // kill death ratio weight
+			  WL_WEIGHT = 300, // win loss ratio weight
+			  KILL_WEIGHT = 5; // kill participation weight
+			  //to be done later! GLOBAL_AVG_KILL = 5;
+	
+	double winloss_ratio, // win loss ratio
+		   kd_ratio, //kill death ratio
+		   avg_kills, //avgerage kills/game
+		   avg_deaths, //avgerage deaths/game
+		   rank_score, // calculated ranking score
+		   season_performance; //how well a player is doing this season (minus is bad, positive is good)
+	
+	cin.ignore();
+	// prompt user for username
+	cout << "Choose a username (10 character limit): ";
+	cin.getline(user_name, 11);
+	
+	//kill & death count calculator
+	K_D_count(kill_sum, kill_high, death_sum, death_low, kd_ratio, predictive_killstreak);
+    //win & loss count calculator
+    W_L_count(win_num, loss_num, game_count, winloss_ratio);
+    //kill & death average and season performance calculator
+    kd_avg_calc(avg_kills, avg_deaths, kill_sum, death_sum, game_count, season_performance);
+	//determines if the season_performance variable is negative or positive
+	season_perf_sign(season_performance, performance_sign);
+	// calculate time spent playing
+	play_time = game_count * MATCH_TIME / 60;
+	
+	// determining rank via if-else statement
+	user_rank_set(rank_score, user_rank_string, kd_ratio, KD_WEIGHT, winloss_ratio, WL_WEIGHT, avg_kills, KILL_WEIGHT);
+
+    //print
+   // print_career_profile(user_name, user_rank_string, play_time, kd_ratio, winloss_ratio, avg_kills, avg_deaths, performance_sign, season_performance, predictive_killstreak);
+    string str_read;
+    
+    // initializing file output stream
+	ofstream fileOut;
+	fileOut.open("CareerProfile.txt");
+	
+	//reading in file
+	ifstream fileIn;
+	fileIn.open("CareerProfile.txt");
+    
+    fileOut  << "===============Career Profile===============" << endl
+	     	 << setw(18) << left << "User Name" << ": " << setw(15) << user_name << endl
+	    	 << setw(18) << left << "User Rank" << ": " << setw(15) << user_rank_string << endl
+	    	 << setw(18) << "Hours Played" << ": " << play_time << " hours" << endl << endl
+	    	 << setw(18) << "Most Kills: " << kill_high << " kills" << endl
+	    	 << setw(18) << "Least Deaths: " << death_low << " deaths" << endl
+	         << setw(18) << "K & D Ratio" << ": " << setprecision(2) << fixed << kd_ratio << setw(15) << endl << endl
+		     << setw(18) << "W & L Ratio" << ": " << winloss_ratio*100 << '%' << endl
+		     << setw(18) << "Avg kills/game" << ": " << avg_kills << " kills" << endl
+		     << setw(18) << "Avg deaths/game" << ": " << avg_deaths <<" deaths" << endl
+		     << setw(18) << "Season Performance" << ": " << performance_sign << season_performance << endl
+		     << setw(18) << "Kill Streak " << ": " << predictive_killstreak << setw(15) << " kills (predictive)";
+	
+	fileOut.close();
+	
+	while(getline(fileIn,str_read)){
+		cout<<str_read<<endl;
+	}
+}
+
+void K_D_count(int &kill_sum, int &kill_high, int &death_sum, int &death_low, double &kd_ratio, int &predictive_killstreak){
     // prompt user for kills and deaths quantity
 	// calculate K/D ratio 
-	cout << "Please enter the number of kills: ";
-	cin >> kill_num;
-	while (kill_num < 0)
-	{
-		cout << "You cannot have a negative number of kills." << endl
-			 << "Please enter the number of kills: ";
-		cin >> kill_num;
+	
+	int killsArr[SIZE], deathsArr[SIZE];
+	
+	cout << "Please enter your kill scores from your last 10 games" << endl;
+	for (int i = 0; i < SIZE; i++) {
+	    int input;
+	    cout << "Game " << i+1 << ": ";
+	    cin >> input;
+	    
+	    while (input < 0) {
+		    cout << "You cannot have a negative number of kills." << endl
+			     << "Please enter again: ";
+		    cin >> input;
+	    }
+	    
+		killsArr[i] = input;
 	}
-	cout << "Please enter the number of deaths: ";
-	cin >> death_num;
-	while (death_num < 0)
-	{
-		cout << "You cannot have a negative number of deaths." << endl
-			 << "Please enter the number of deaths: ";
-		cin >> death_num;
+	
+	kill_sum = getArrSum(killsArr);
+	kill_high = getArrHigh(killsArr);
+	
+	cout << endl << "Please enter your death scores from your last 10 games" << endl;
+	for (int i = 0; i < SIZE; i++) {
+	    double input;
+	    cout << "Game " << i+1 << ": ";
+	    cin >> input;
+	    
+	    while (input < 0) {
+		    cout << "You cannot have a negative number of deaths." << endl
+			     << "Please enter again: ";
+		    cin >> input;
+	    }
+	    
+		deathsArr[i] = input;
 	}
-	kd_ratio = static_cast<double>(kill_num) / death_num; //calculatig kill and death ratio
+	
+	death_sum = getArrSum(deathsArr);
+	death_low = getArrLow(deathsArr);
+	
+	kd_ratio = static_cast<double>(kill_sum) / death_sum; //calculatig kill and death ratio
 	
 	//predictive (random) kill streak generator
 	unsigned seed = time(0);
-	predictive_killstreak = (rand() % (kill_num)) + 1;
+	predictive_killstreak = (rand() % (kill_sum)) + 1;
 }
 
 void W_L_count(int &win_num, int &loss_num, int &game_count, double &winloss_ratio){
@@ -129,11 +652,49 @@ void W_L_count(int &win_num, int &loss_num, int &game_count, double &winloss_rat
 	while (loss_num < 0)
 	{
 		cout << "You cannot have a negative number of losses." << endl
-			 << "Please enter the number of losses: ";
+			 << "Please enter the number of losses: " << endl;
 		cin >> loss_num;
 	}
 	game_count = win_num + loss_num; //game count
 	winloss_ratio = (static_cast<double>(win_num) / game_count);
+}
+
+int getArrSum(int arr[]) {
+    
+    int sum = 0;
+    
+    for (int i = 0; i < SIZE; i++) {
+        sum += arr[i];
+    }
+    
+    return sum;
+}
+
+int getArrHigh(int arr[]) {
+    
+    int high;
+    
+    high = arr[0];
+    for (int i = 1; i < SIZE; i++) {
+        if (arr[i] > high) {
+            high = arr[i];
+        }
+    }
+    
+    return high;
+}
+
+int getArrLow(int arr[]) {
+    
+    int low;
+    
+    low = arr[0];
+    for (int i = 1; i < SIZE; i++) {
+        if (arr[i] < low) {
+            low = arr[i];
+        }
+    }
+    return low;
 }
 
 void kd_avg_calc(double &avg_kills, double &avg_deaths, int &kill_num, int &death_num, int &game_count, double &season_performance){
@@ -171,560 +732,4 @@ void user_rank_set(double &rank_score, string &user_rank_string, double &kd_rati
 	} else {
 	    user_rank_string = "Bronze";
 	}
-}
-
-void print_career_profile(char user_name, string user_rank_string, int play_time, double kd_ratio, double winloss_ratio, double avg_kills, double avg_deaths, char* performance_sign, double season_performance, int predictive_killstreak){
-    string str_read;
-    
-    // initializing file output stream
-	ofstream fileOut;
-	fileOut.open("CareerProfile.txt");
-	
-	//reading in file
-	ifstream fileIn;
-	fileIn.open("CareerProfile.txt");
-    
-    fileOut  << "===============Career Profile===============" << endl
-	     	 << setw(18) << left << "User Name" << ": " << setw(15) << user_name << endl
-	    	 << setw(18) << left << "User Rank" << ": " << setw(15) << user_rank_string << endl
-	    	 << setw(18) << "Hours Played" << ": " << play_time << " hours" << endl
-	         << setw(18) << "K & D Ratio" << ": " << setprecision(2) << fixed << kd_ratio << setw(15) << endl
-		     << setw(18) << "W & L Ratio" << ": " << winloss_ratio*100 << '%' << endl
-		     << setw(18) << "Avg kills/game" << ": " << avg_kills << " kills" << endl
-		     << setw(18) << "Avg deaths/game" << ": " << avg_deaths <<" deaths" << endl
-		     << setw(18) << "Season Performance" << ": " << performance_sign << season_performance << endl
-		     << setw(18) << "Kill Streak " << ": " << predictive_killstreak << setw(15) << " kills (predictive)";
-	
-	fileOut.close();
-	
-	while(getline(fileIn,str_read)){
-		cout<<str_read<<endl;
-	}
-    
-}
-void getCareerProfile(){
-    // declaring necessary variables
-	char user_name[11], //c-string user name data, limits to 10 characters
-		 performance_sign, // indicates positive ('+') or negative ('-') season performance
-		 init_char; //program initialization character
-		 
-	string user_rank_string; //user rank in string
-
-	
-	int kill_num, //kill count in-game
-		death_num, //death count in-game
-		win_num, //win count in-game
-		loss_num, //loss count in-game
-		game_count, //number of games played
-		play_time, //total time played
-		predictive_killstreak, //predicting the continuous kill streak with random number
-		user_rank; // numerical value for rank
-		
-	const int MATCH_TIME = 30, // average time per match
-			  KD_WEIGHT = 200, // kill death ratio weight
-			  WL_WEIGHT = 300, // win loss ratio weight
-			  KILL_WEIGHT = 5; // kill participation weight
-			  //to be done later! GLOBAL_AVG_KILL = 5;
-	
-	double winloss_ratio, // win loss ratio
-		   kd_ratio, //kill death ratio
-		   avg_kills, //avgerage kills/game
-		   avg_deaths, //avgerage deaths/game
-		   rank_score, // calculated ranking score
-		   season_performance; //how well a player is doing this season (minus is bad, positive is good)
-	
-	cin.ignore();
-	// prompt user for username
-	cout << "Choose a username (10 character limit): ";
-	cin.getline(user_name, 11);
-	
-	//kill & death count calculator
-	K_D_count(kill_num, death_num, kd_ratio, predictive_killstreak);
-    //win & loss count calculator
-    W_L_count(win_num, loss_num, game_count, winloss_ratio);
-    //kill & death average and season performance calculator
-    kd_avg_calc(avg_kills, avg_deaths, kill_num, death_num, game_count, season_performance);
-	//determines if the season_performance variable is negative or positive
-	season_perf_sign(season_performance, performance_sign);
-	// calculate time spent playing
-	play_time = game_count * MATCH_TIME / 60;
-	
-	// determining rank via if-else statement
-	user_rank_set(rank_score, user_rank_string, kd_ratio, KD_WEIGHT, winloss_ratio, WL_WEIGHT, avg_kills, KILL_WEIGHT);
-
-    //print
-   // print_career_profile(user_name, user_rank_string, play_time, kd_ratio, winloss_ratio, avg_kills, avg_deaths, performance_sign, season_performance, predictive_killstreak);
-    string str_read;
-    
-    // initializing file output stream
-	ofstream fileOut;
-	fileOut.open("CareerProfile.txt");
-	
-	//reading in file
-	ifstream fileIn;
-	fileIn.open("CareerProfile.txt");
-    
-    fileOut  << "===============Career Profile===============" << endl
-	     	 << setw(18) << left << "User Name" << ": " << setw(15) << user_name << endl
-	    	 << setw(18) << left << "User Rank" << ": " << setw(15) << user_rank_string << endl
-	    	 << setw(18) << "Hours Played" << ": " << play_time << " hours" << endl
-	         << setw(18) << "K & D Ratio" << ": " << setprecision(2) << fixed << kd_ratio << setw(15) << endl
-		     << setw(18) << "W & L Ratio" << ": " << winloss_ratio*100 << '%' << endl
-		     << setw(18) << "Avg kills/game" << ": " << avg_kills << " kills" << endl
-		     << setw(18) << "Avg deaths/game" << ": " << avg_deaths <<" deaths" << endl
-		     << setw(18) << "Season Performance" << ": " << performance_sign << season_performance << endl
-		     << setw(18) << "Kill Streak " << ": " << predictive_killstreak << setw(15) << " kills (predictive)";
-	
-	fileOut.close();
-	
-	while(getline(fileIn,str_read)){
-		cout<<str_read<<endl;
-	}
-}
-
-
-//gets user level
-int getUserLevel(){
-    int user_input;
-    cout << "Please enter your level (for first time user, please enter 0): ";
-    cin >> user_input;
-    while (user_input < 0){
-        cout << "Please enter a user level greater than or equal to 0: ";
-        cin >> user_input;
-    }
-    return user_input;
-}
-
-// method that executes start match or career profile
-void execute (int a, int &user_level) {
-    
-    if (a == 1) {
-        getModeChoice(user_level);
-    } else {
-        getCareerProfile();
-    }
-}
-
-// displays mode choices and prompts user input
-void getModeChoice(int &user_level) {
-    int choice;
-    cout << endl << "Select Game Mode" << endl
-         << "1) Battle Royale (5 vs 5)" << endl
-         << "2) Skirmish (3 vs 3)" << endl
-         << "3) Tag Team (2 vs 2)" << endl
-         << "Enter your choice: " << endl;
-    
-    cin >> choice;
-    while (choice != 1 && choice != 2 && choice != 3) {
-        cout << "Invalid selection. " << endl
-             << "Enter your choice: " << endl;
-        cin >> choice;
-    }
-    
-    redirectMode(choice, user_level);
-}
-
-// directs to game mode builder
-void redirectMode(int a, int &user_level) {
-    if (a == 1) {
-        buildBattleRoyale(user_level);
-    } else if (a == 2) {
-        buildSkirmish(user_level);
-    } else {
-        buildTagTeam(user_level);
-    }
-}
-
-// builds battle royale leaderboard
-void buildBattleRoyale(int &user_level) {
-    buildPlayer(user_level);
-    buildAllyTeam(5, user_level);
-    
-    cout << "========ENEMY TEAM========" << endl;
-    buildEnemyTeam(5, user_level);
-}
-
-// builds skirmish leaderboard
-void buildSkirmish(int &user_level) {
-    buildPlayer(user_level);
-    buildAllyTeam(3, user_level);
-    
-    cout << "========ENEMY TEAM========" << endl;
-    buildEnemyTeam(3, user_level);
-}
-
-// builds tag team leaderboard
-void buildTagTeam(int &user_level) {
-    buildPlayer(user_level);
-    buildAllyTeam(2, user_level);
-    
-    cout << "========ENEMY TEAM========" << endl;
-    buildEnemyTeam(2, user_level);
-}
-
-// print's user's player choices
-void printPlayer(int name, int role, int element, int weapon, int userLevel = 0 ) {
-    
-    cout << endl <<  "========ALLY TEAM========" << endl
-         << "Player 1 (You): " << endl
-         << "Fighter: " << setw(5);
-         
-        if (name == 1) {
-            cout << "Orion";
-        } else if (name == 2) {
-            cout << "Cassiopeia";
-        } else if (name == 3) {
-            cout << "Arcturus";
-        } else if (name == 4) {
-            cout << "Hyperion";
-        } else {
-            cout << "Andromeda";
-        } 
-    
-    cout << endl << "Level: " << setw(5) << userLevel << endl
-         << "Position: " << setw(5);
-         
-        if (role == 1) {
-            cout << "Paladin";
-        } else if (role == 2) {
-            cout << "Sentinel";
-        } else if (role == 3) {
-            cout << "Scout";
-        } else if (role == 4) {
-            cout << "Sorceror";
-        } else {
-            cout << "Medic";
-        }
-         
-    cout << endl << "Affinity: " << setw(5);
-         
-        if (element == 1) {
-            cout << "Solar";
-        } else if (element == 2) {
-            cout << "Electric";
-        } else if (element == 3) {
-            cout << "Plasma";
-        } else if (element == 4) {
-            cout << "Fractal";
-        } else {
-            cout << "Dark Energy";
-        }
-         
-    cout << endl << "Weapon: " << setw(5);
-         
-        if (weapon == 1) {
-            cout << "Long Sword and Shield";
-        } else if (weapon == 2) {
-            cout << "Lance";
-        } else if (weapon == 3) {
-            cout << "Crossbow";
-        } else if (weapon == 4) {
-            cout << "Battle Axe";
-        } else {
-            cout << "Dual Blade";
-        }
-         
-    cout <<endl;    
-}
-
-// displays fighter choices and prompts user input
-int getUserFighter() {
-    int a;
-    cout << endl << "========CHOOSE YOUR FIGHTER========" << endl
-         << "1) Orion, the King" << endl
-         << "2) Cassiopeia, the Queen" << endl
-         << "3) Arcturus, the Scholar" << endl
-         << "4) Hyperion, the Hero" << endl
-         << "5) Andromeda, the Assassin" << endl
-         << "Enter your choice: " << endl;
-         
-    cin >> a;
-    
-    while (a != 1 && a != 2 && a != 3 && a != 4 && a!= 5) {
-        cout << "Invalid selection." << endl
-             << "Enter your choice: " << endl;
-        cin >> a;
-    }
-    
-    return a;
-}
-
-// displays role choice and prompts user input
-int getUserRole() {
-
-    int a;
-    
-    cout << endl << "========CHOOSE YOUR ROLE========" << endl
-         << "1) Paladin, the frontline" << endl
-         << "2) Sentinel, the defender" << endl
-         << "3) Scout, the reconnaisance" << endl
-         << "4) Sorceror, the thaumaturge" << endl
-         << "5) Medic, the Healer" << endl
-         << "Enter your choice: " << endl;
-         
-    cin >> a;
-    
-    while (a != 1 && a != 2 && a != 3 && a != 4 && a!= 5) {
-        cout << "Invalid selection." << endl
-             << "Enter your choice: " << endl;
-        cin >> a;
-    }
-    
-    return a;
-}
-
-// displays element choices and prompts user input
-int getUserElement() {
-    
-    int a;
-    
-    cout << endl << "========CHOOSE YOUR AFFINITY========" << endl
-         << "1) Solar" << endl
-         << "2) Electric" << endl
-         << "3) Plasma" << endl
-         << "4) Fractal" << endl
-         << "5) Dark Energy" << endl
-         << "Enter your choice: " << endl;
-         
-    cin >> a;
-    
-    while (a != 1 && a != 2 && a != 3 && a != 4 && a!= 5) {
-        cout << "Invalid selection." << endl
-             << "Enter your choice: " << endl;
-        cin >> a;
-    }
-    
-    return a;
-}
-
-int getUserWeapon() {
-    
-    int a;
-    
-    cout << endl << "========CHOOSE YOUR WEAPON========" << endl
-         << "1) Long Sword and Shield" << endl
-         << "2) Lance" << endl
-         << "3) Crossbow" << endl
-         << "4) Battle Axe" << endl
-         << "5) Dual Blade" << endl
-         << "Enter your choice: " << endl;
-         
-    cin >> a;
-    
-    while (a != 1 && a != 2 && a != 3 && a != 4 && a!= 5) {
-        cout << "Invalid selection." << endl
-             << "Enter your choice: " << endl;
-        cin >> a;
-    }
-    
-    return a;
-}
-
-// gets users choices and builds a fighter for the user
-void buildPlayer(int &user_level) {
-    int a, b, c, d;
-    
-    a = getUserFighter();
-    b = getUserRole();
-    c = getUserElement();
-    d = getUserWeapon();
-    user_level = getUserLevel();
-    
-    printPlayer(a, b, c, d, user_level);
-    
-}
-
-// builds ally team
-void buildAllyTeam (int a, int &user_level) {
-    for (int i = 2; i <= a; i++) {
-        user_level += i;
-        buildPlayer(i, user_level);
-    }
-}
-
-// builds enemy team
-void buildEnemyTeam (int a, int &user_level) {
-    for (int i = 1; i <= a; i++) {
-        user_level += i;
-        buildPlayer(i, user_level);
-    }
-}
-
-// builds individual players
-void buildPlayer(int a, int &user_level) {
-    
-    int level;
-    unsigned seed=time(0);
-    srand(seed);
-    if (user_level > 10){
-        level = (rand() % (user_level-5))+(user_level-5);
-    } else if (user_level <= 10) {
-        level = (rand() % (user_level));
-    }
-    
-    string name,
-           role,
-           element,
-           weapon;
-    
-    name = getName();
-    role = getRole();
-    element = getElement();
-    weapon = getWeapon();
-    
-    printPlayer(a, level, name, role, element, weapon); 
-}
-
-// function that generates random numbers
-int generateNum() {
-    int num;
-    num = (rand() % 4) + 1;
-    return num;
-}
-
-// gets computer generated player's fighter through file input
-string getName() {
-    string a, b, c, d, e;
-    int i;
-    
-    ifstream fileIn;
-    fileIn.open("characters.txt");
-    
-    getline(fileIn, a);
-    getline(fileIn, b);
-    getline(fileIn, c);
-    getline(fileIn, d);
-    getline(fileIn, e);
-    
-    i = generateNum();
-    
-    switch (i) {
-        case 1: 
-            return a;
-            break;
-        case 2:
-            return b;
-            break;
-        case 3:
-            return c;
-            break;
-        case 4: 
-            return d;
-            break;
-        case 5:
-            return e;
-            break;
-    }
-}
-
-// gets computer generated player's role through file input
-string getRole() {
-    string a, b, c, d, e;
-    int i = generateNum();
-    
-    ifstream fileIn;
-    fileIn.open("roles.txt");
-    
-    getline(fileIn, a);
-    getline(fileIn, b);
-    getline(fileIn, c);
-    getline(fileIn, d);
-    getline(fileIn, e);
-    
-    
-    switch (i) {
-        case 1: 
-            return a;
-            break;
-        case 2:
-            return b;
-            break;
-        case 3:
-            return c;
-            break;
-        case 4: 
-            return d;
-            break;
-        case 5:
-            return e;
-            break;
-    }
-}
-
-// gets computer generated player's element through file input
-string getElement() {
-    string a, b, c, d, e;
-    int i = generateNum();
-    
-    ifstream fileIn;
-    fileIn.open("elements.txt");
-    
-    getline(fileIn, a);
-    getline(fileIn, b);
-    getline(fileIn, c);
-    getline(fileIn, d);
-    getline(fileIn, e);
-    
-    
-    switch (i) {
-        case 1: 
-            return a;
-            break;
-        case 2:
-            return b;
-            break;
-        case 3:
-            return c;
-            break;
-        case 4: 
-            return d;
-            break;
-        case 5:
-            return e;
-            break;
-    }
-}
-
-// gets computer generated player's weapon through file input
-string getWeapon() {
-    string a, b, c, d, e;
-    int i = generateNum();
-    
-    ifstream fileIn;
-    fileIn.open("weapons.txt");
-    
-    getline(fileIn, a);
-    getline(fileIn, b);
-    getline(fileIn, c);
-    getline(fileIn, d);
-    getline(fileIn, e);
-    
-    switch (i) {
-        case 1: 
-            return a;
-            break;
-        case 2:
-            return b;
-            break;
-        case 3:
-            return c;
-            break;
-        case 4: 
-            return d;
-            break;
-        case 5:
-            return e;
-            break;
-    }
-}
-
-// function prints computer generated players
-void printPlayer(int a, int b, string fighter_name, string fighter_role,
-                   string fighter_element, string fighter_weapon) {
-    cout << endl << "Player " << a << ": " << endl
-         << "Fighter: " << setw(5) << fighter_name << endl
-         << "Level: " << setw(5) << b << endl
-         << "Position: " << setw(5) << fighter_role << endl
-         << "Affinity: " << setw(5) << fighter_element << endl
-         << "Weapon: " << setw(5) << fighter_weapon << endl << endl;
 }
